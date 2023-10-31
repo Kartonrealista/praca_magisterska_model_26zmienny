@@ -5,12 +5,12 @@ use std::{
 
 //czarna magia
 struct BoxedFunction {
-    f: Box<dyn Fn([f64; 27], [f64; 31]) -> f64>,
+    f: Box<dyn Fn(&[f64; 27], &[f64; 31], &f64) -> f64>,
 }
 impl BoxedFunction {
     fn new<F>(f: F) -> BoxedFunction
     where
-        F: Fn([f64; 27], [f64; 31]) -> f64 + 'static,
+        F: Fn(&[f64; 27], &[f64; 31], &f64) -> f64 + 'static,
     {
         BoxedFunction { f: Box::new(f) }
     }
@@ -66,20 +66,21 @@ fn main() {
     km[30] = 2.0 * 10.0_f64.powf(9.0);
 
     //równania
-    let eq1 = |c: [f64; 27], km: [f64; 31]| {
+    let eq1 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = - km[1] * c[1] * c[2] * c[3] /*M1*/
         + km[2] * c[4] /*M2*/
         + km[20] * c[11] * c[19] /*M20*/
         + km[22] * c[20] * c[11] /*M22*/
         - km[26]  * c[1] * c[23] * c[23] /*M26*/
         + km[29] * c[2] * c[25]; /*M29*/
-        if c[1] + sum > 0.0 {
+        if c[1] + h * sum >= 0.0 {
             sum
         } else {
-            -c[1]
+            println!("{}", c[1] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq2 = |c: [f64; 27], km: [f64; 31]| {
+    let eq2 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = - km[1] * c[1] * c[2] * c[3] /*M1*/
         + km[2] * c[4] /*M2*/
         + km[4] * c[7] * c[7] /*M4*/
@@ -89,13 +90,14 @@ fn main() {
         - km[28] * c[2] * c[26] /*M28*/
         - km[29] * c[2] * c[25] /*M29*/
         - km[30] * c[2] * c[6]; /*M30*/
-        if c[2] + sum > 0.0 {
+        if c[2] + h * sum >= 0.0 {
             sum
         } else {
-            -c[2]
+            println!("{}", c[2] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq3 = |c: [f64; 27], km: [f64; 31]| {
+    let eq3 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = - km[1] * c[1] * c[2] * c[3] /*M1*/
         + km[2] * c[4] /*M2*/
         - km[8] * c[9] * c[10] /*M8*/
@@ -112,97 +114,106 @@ fn main() {
         - km[25] * c[9] * 10.0_f64.powf(-14.0) / c[3] /*M25*/
         - 2.0 * km[26]  * c[1] * c[23] * c[23] /*M26*/
         + 2.0 * km[29] * c[2] * c[25]; /*M29*/
-        if c[3] + sum > 0.0 {
+        if c[3] + h * sum >= 0.0 {
             sum
         } else {
-            -c[3]
+            println!("{}", c[3] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq4 = |c: [f64; 27], km: [f64; 31]| {
+    let eq4 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[1] * c[1] * c[2] * c[3] /*M1*/
         - km[2] * c[4] /*M2*/
         - km[3] * c[4] /*M3*/
         - km[20] * c[11] * c[19] /*M20*/
         - km[22] * c[11] * c[20]; /*M22*/
-        if c[4] + sum > 0.0 {
+        if c[4] + h * sum >= 0.0 {
             sum
         } else {
-            -c[4]
+            println!("{}", c[4] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq5 = |c: [f64; 27], km: [f64; 31]| {
+    let eq5 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = -km[5] * c[2] * c[5]; /*M5*/
-        if c[5] + sum > 0.0 {
+        if c[5] + h * sum >= 0.0 {
             sum
         } else {
-            -c[5]
+            println!("{}", c[5] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq6 = |c: [f64; 27], km: [f64; 31]| {
+    let eq6 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[29] * c[2] * c[25] /*M29*/
         - km[30] * c[2] * c[6]; /*M30*/
-        if c[6] + sum > 0.0 {
+        if c[6] + h * sum >= 0.0 {
             sum
         } else {
-            -c[6]
+            println!("{}", c[6] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq7 = |c: [f64; 27], km: [f64; 31]| {
+    let eq7 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km [3] * c[4] /*M3*/
         - 2.0 * km[4] * c[7] * c[7] /*M4*/
         - km[21] * c[7] * c[18] /*M21*/
         + km[30] * c[2] * c[6]; /*M30*/
-        if c[7] + sum > 0.0 {
+        if c[7] + h * sum >= 0.0 {
             sum
         } else {
-            -c[7]
+            println!("{}", c[7] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq8 = |c: [f64; 27], km: [f64; 31]| {
+    let eq8 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[5] * c[2] * c[5] /*M5*/
         - km[6] * c[2] * c[8] /*M6*/
         + km[7] * c[9] * c[9] /*M7*/
         + km[8] * c[9] * c[10]; /*M8*/
-        if c[8] + sum > 0.0 {
+        if c[8] + h * sum >= 0.0 {
             sum
         } else {
-            -c[8]
+            println!("{}", c[8] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq9 = |c: [f64; 27], km: [f64; 31]| {
+    let eq9 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[6] * c[2] * c[8] /*M6*/
         - 2.0 * km[7] * c[9] * c[9] /*M7*/
         - km[8] * c[9] * c[10] /*M8*/
         - km[25] * c[9] * 10.0_f64.powf(-14.0) / c[3]; /*M25*/
-        if c[9] + sum > 0.0 {
+        if c[9] + h * sum >= 0.0 {
             sum
         } else {
-            -c[9]
+            println!("{}", c[9] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq10 = |c: [f64; 27], km: [f64; 31]| {
+    let eq10 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[7] * c[9] * c[9] /*M7*/
         - km[8] * c[9] * c[10] /*M8*/
         - 2.0 * km[9] * c[10] * c[10] /*M9*/
         - km[18] * c[10] * c[18] /*M18*/
         + km[19] * c[19] * c[19]; /*M19*/
-        if c[10] + sum > 0.0 {
+        if c[10] + h * sum >= 0.0 {
             sum
         } else {
-            -c[10]
+            println!("{}", c[10] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq11 = |c: [f64; 27], km: [f64; 31]| {
+    let eq11 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[3] * c[4] /*M3*/
         - km[20] * c[11] * c[19] /*M20*/
         - km[22] * c[11] * c[20]; /*M22*/
-        if c[11] + sum > 0.0 {
+        if c[11] + h * sum >= 0.0 {
             sum
         } else {
-            -c[11]
+            println!("{}", c[11] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq12 = |c: [f64; 27], km: [f64; 31]| {
+    let eq12 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[8] * c[9] * c[10] /*M8*/
         + km[9] * c[10] * c[10] /*M9*/
         - km[10] * c[12] /*M10*/
@@ -210,149 +221,164 @@ fn main() {
         - km[13] * c[3] * c[12] /*M13*/
         + km[21] * c[7] * c[18] /*M21*/
         + 2.0 * km[28] * c[2] * c[26]; /*M28*/
-        if c[12] + sum > 0.0 {
+        if c[12] + h * sum > 0.0 {
             sum
         } else {
-            -c[12]
+            println!("{}", c[12] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq13 = |c: [f64; 27], km: [f64; 31]| {
-        let sum = km[10] * c [12] /*M10*/
+    let eq13 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
+        let sum = km[10] * c[12] /*M10*/
         + km[11] * c[15] /*M11*/
         - km[14] * c[13] /*M14*/
         + km[15] * c[3] * c[17]; /*M15*/
-        if c[13] + sum > 0.0 {
+        if c[13] + h * sum >= 0.0 {
             sum
         } else {
-            -c[13]
+            println!("{}", c[13] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq14 = |c: [f64; 27], km: [f64; 31]| {
-        let sum = km[10] * c [12] /*M10*/
+    let eq14 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
+        let sum = km[10] * c[12] /*M10*/
         + km[16] * c[16] /*M16*/
         - km[17] * c[3] * c[14]; /*M17*/
-        if c[14] + sum > 0.0 {
+        if c[14] + h * sum >= 0.0 {
             sum
         } else {
-            -c[14]
+            println!("{}", c[14] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq15 = |c: [f64; 27], km: [f64; 31]| {
+    let eq15 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = - km[11] * c[15] /*M11*/
         - km[12] * c[15] /*M12*/
         + km[13] * c[3] * c[12]; /*M13*/
-        if c[15] + sum > 0.0 {
+        if c[15] + h * sum >= 0.0 {
             sum
         } else {
-            -c[15]
+            println!("{}", c[15] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq16 = |c: [f64; 27], km: [f64; 31]| {
+    let eq16 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[11] * c[15] /*M11*/
         -km[16] * c[16] /*M16*/
         + km[17] * c[3] * c[14]; /*M17*/
-        if c[16] + sum > 0.0 {
+        if c[16] + h * sum >= 0.0 {
             sum
         } else {
-            -c[16]
+            println!("{}", c[16] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq17 = |c: [f64; 27], km: [f64; 31]| {
+    let eq17 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[14] * c[13] /*M14*/
         - km[15] * c[3] * c[17]; /*M15*/
-        if c[17] + sum > 0.0 {
+        if c[17] + h * sum >= 0.0 {
             sum
         } else {
-            -c[17]
+            println!("{}", c[17] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq18 = |c: [f64; 27], km: [f64; 31]| {
+    let eq18 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[9] * c[10] * c[10] /*M9*/
         - km[18] * c[10] * c[18] /*M18*/
         + km[19] * c[19] * c[19] /*M19*/
         + km[20] * c[11] * c[19] /*M20*/
         - km[21] * c[7] * c[18]; /*M21*/
-        if c[18] + sum > 0.0 {
+        if c[18] + h * sum >= 0.0 {
             sum
         } else {
-            -c[18]
+            println!("{}", c[18] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq19 = |c: [f64; 27], km: [f64; 31]| {
+    let eq19 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = 2.0 * km[18] * c[10] * c[18] /*M18*/
         - 2.0 * km[19] * c[19] * c[19] /*M19*/
         - km[20] * c[11] * c[19]; /*M20*/
-        if c[19] + sum > 0.0 {
+        if c[19] + h * sum >= 0.0 {
             sum
         } else {
-            -c[19]
+            println!("{}", c[19] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq20 = |c: [f64; 27], km: [f64; 31]| {
+    let eq20 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[21] * c[7] * c[18] /*M21*/
         - km[22] * c[20] * c[11] /*M22*/
         - 2.0 * km[23] * c[20] * c[20]; /*M23*/
-        if c[20] + sum > 0.0 {
+        if c[20] + h * sum >= 0.0 {
             sum
         } else {
-            -c[20]
+            println!("{}", c[20] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq21 = |c: [f64; 27], km: [f64; 31]| {
+    let eq21 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[22] * c[20] * c[11] /*M22*/
         + km[23] * c[20] * c[20] /*M23*/
         - km[24] * c[2] * c[21] /*M24*/
         + km[25] * c[9] * 10.0_f64.powf(-14.0) / c[3]; /*M25*/
-        if c[21] + sum > 0.0 {
+        if c[21] + h * sum >= 0.0 {
             sum
         } else {
-            -c[21]
+            println!("{}", c[21] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq22 = |_: [f64; 27], _k: [f64; 31]| 0.0;
-    let eq23 = |c: [f64; 27], km: [f64; 31]| {
+    let eq22 = |_: &[f64; 27], _k: &[f64; 31], _: &f64| 0.0;
+    let eq23 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[25] * c[9] * 10.0_f64.powf(-14.0) / c[3] /*M25*/
         - 2.0 * km[26]  * c[1] * c[23] * c[23] /*M26*/
         + km[29] * c[2] * c[25]; /*M29*/
-        if c[23] + sum > 0.0 {
+        if c[23] + h * sum >= 0.0 {
             sum
         } else {
-            -c[23]
+            println!("{}", c[23] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq24 = |c: [f64; 27], km: [f64; 31]| {
+    let eq24 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[26]  * c[1] * c[23] * c[23] /*M26*/
         - 2.0 * km[27] * c[24] * c[24]; /*M27*/
-        if c[24] + sum > 0.0 {
+        if c[24] + h * sum >= 0.0 {
             sum
         } else {
-            -c[24]
+            println!("{}", c[24] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq25 = |c: [f64; 27], km: [f64; 31]| {
+    let eq25 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[27] * c[24] * c[24] /*M27*/
         - km[29] * c[2] * c[25]; /*M29*/
-        if c[25] + sum > 0.0 {
+        if c[25] + h * sum >= 0.0 {
             sum
         } else {
-            -c[25]
+            println!("{}", c[25] + h * sum);
+            panic!("negative concentration")
         }
     };
-    let eq26 = |c: [f64; 27], km: [f64; 31]| {
+    let eq26 = |c: &[f64; 27], km: &[f64; 31], h: &f64| {
         let sum = km[27] * c[24] * c[24] /*M27*/
         - km[28] * c[2] * c[26]; /*M28*/
-        if c[26] + sum > 0.0 {
+        if c[26] + h * sum >= 0.0 {
             sum
         } else {
-            -c[26]
+            println!("{}", c[26] + h * sum);
+            panic!("negative concentration")
         }
     };
 
     let mut eqs = Vec::new();
-    let mut pushinator =
-        |eq: fn([f64; 27], [f64; 31]) -> f64| eqs.push(BoxedFunction::new(eq));
-    pushinator(|_, _| 0.0); // niczemu nie służy, tylko po to,
-                            // żeby liczba elementów była taka sama jak w conc poniżej
+    let mut pushinator = |eq: fn(&[f64; 27], &[f64; 31], &f64) -> f64| {
+        eqs.push(BoxedFunction::new(eq))
+    };
+    pushinator(|_, _, _| 0.0); // niczemu nie służy, tylko po to,
+                               // żeby liczba elementów była taka sama jak w conc poniżej
     pushinator(eq1);
     pushinator(eq2);
     pushinator(eq3);
@@ -386,11 +412,20 @@ fn main() {
         .read_line(&mut c_cu_poczatkowe)
         .expect("stdin failed - stezenie poczatkowe");
 
+    //stale do rk4
+    let mut k1s = [0.0; 27];
+    let mut k2concs = [0.0; 27];
+    let mut k2s = [0.0; 27];
+    let mut k3concs = [0.0; 27];
+    let mut k3s = [0.0; 27];
+    let mut k4concs = [0.0; 27];
+    let mut k4s = [0.0; 27];
+
     //stezenia
     let mut h;
     let mut t = 0.0;
-    let mut conc = [0.0*10.0_f64.powf(-8.0); 27];
-    conc[4] = c_cu_poczatkowe.trim_end().parse::<f64>().unwrap()
+    let mut conc = [10.0_f64.powf(-8.0); 27];
+    conc[1] = c_cu_poczatkowe.trim_end().parse::<f64>().unwrap()
         * 10.0_f64.powf(-6.0);
     println!(
         "...c_cu = {}",
@@ -399,8 +434,8 @@ fn main() {
     conc[2] = 0.25;
     conc[3] = 0.025;
     conc[5] = 0.025;
-    //conc[25] = 10.0_f64.powf(-8.0);
-
+    conc[6] = 0.0;
+    conc[25] = 0.0;
     //let mut pot = potencjal_mieszany(c_ho2min, conc[5], conc[2], conc[1]);
     //println!("{t},{},{}", (pot.0), (pot.1));
 
@@ -421,16 +456,13 @@ fn main() {
         .write_all("t,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26\n".as_bytes())
         .expect("tragedia stezenia");
     let zapisy_na_sekunde = 10.0;
-    
 
     //let mut switch = true;
     while t < 10000.0 {
-        if t < 5.0 * 10.0_f64.powf(0.0) {
-            h = 10.0_f64.powf(-8.0)
-        } else if t < 10_f64.powf(2.0) {
-            h = 10.0_f64.powf(-7.0)
+        if t < 5.0 * 10.0_f64.powf(-1.0) {
+            h = 4.0 * 10.0_f64.powf(-9.0)
         } else {
-            h = 10.0_f64.powf(-7.0)
+            h = 5.0 * 10.0_f64.powf(-9.0)
         }
         t += h;
         // if t > 2400.0 && switch {
@@ -444,7 +476,19 @@ fn main() {
         //     }
         // }
 
-        conc = rk4(conc, h, &eqs, &mut km);
+        rk4(
+            &mut conc,
+            &h,
+            &eqs,
+            &mut km,
+            &mut k1s,
+            &mut k2concs,
+            &mut k2s,
+            &mut k3concs,
+            &mut k3s,
+            &mut k4concs,
+            &mut k4s,
+        );
         if conc[1] > 0.001 || conc[1].is_nan() {
             println!("{}, {}, {}", t / 60.0, conc[1], km[2]);
             break;
@@ -506,47 +550,46 @@ fn main() {
 //         .unwrap();
 //     new_concs
 // }
-
 fn rk4(
-    conc: [f64; 27],
-    h: f64,
+    conc: &mut [f64; 27],
+    h: &f64,
     eqs: &[BoxedFunction],
     km: &mut [f64; 31],
-) -> [f64; 27] {
+    k1s: &mut [f64; 27],
+    k2concs: &mut [f64; 27],
+    k2s: &mut [f64; 27],
+    k3concs: &mut [f64; 27],
+    k3s: &mut [f64; 27],
+    k4concs: &mut [f64; 27],
+    k4s: &mut [f64; 27],
+) {
     km[2] = km[1]
         / ((2.4 * 100.0 * 4.8 * 10.0_f64.powf(17.0) * conc[3].powf(4.0)
             + 3.3 * 10.0_f64.powf(17.0) * conc[3].powf(3.0))
             / (1.0 + 2.4 * 100.0 * conc[3]));
-    let kxconculator = |kxs: &Vec<f64>, multiplier| {
-        conc.iter()
-            .zip(kxs)
-            .map(|(c, k)| c + k * multiplier)
-            .collect::<Vec<_>>()
-            .try_into()
-            .unwrap()
+    let kxconculator =
+        |kxs: &[f64; 27], multiplier, kxconcs: &mut [f64; 27]| {
+            (0usize..27)
+                .zip(kxs)
+                .for_each(|(i, k)| kxconcs[i] = conc[i] + k * multiplier)
+        };
+    let kxer = |kxconcs: &[f64; 27], kxs: &mut [f64; 27]| {
+        (0usize..27).for_each(|i| kxs[i] = h * (eqs[i].f)(kxconcs, km, h));
     };
-    let kxer = |kxconcs: [f64; 27]| {
-        (0usize..27usize)
-            .map(|i| h * (*eqs[i].f)(kxconcs, *km))
-            .collect::<Vec<f64>>()
-    };
-    let k1s: Vec<f64> = kxer(conc);
-    let k2concs = kxconculator(&k1s, 0.5);
-    let k2s: Vec<f64> = kxer(k2concs);
-    let k3concs = kxconculator(&k2s, 0.5);
-    let k3s: Vec<f64> = kxer(k3concs);
-    let k4concs = kxconculator(&k3s, 1.0);
-    let k4s: Vec<f64> = kxer(k4concs);
+    kxer(conc, k1s);
+    kxconculator(k1s, 0.5, k2concs);
+    kxer(k2concs, k2s);
+    kxconculator(k2s, 0.5, k3concs);
+    kxer(k3concs, k3s);
+    kxconculator(k3s, 1.0, k4concs);
+    kxer(k4concs, k4s);
 
-    let mut new_concs: [f64; 27] = zip!(conc, k1s, k2s, k3s, k4s)
-        .map(|(c, (k1, (k2, (k3, k4))))| {
-            c + (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
-        })
-        .collect::<Vec<_>>()
-        .try_into()
-        .unwrap();
-    new_concs[22] = 10.0_f64.powf(-14.0) / new_concs[3];
-    new_concs
+    zip!(k1s, k2s, k3s, k4s).enumerate().for_each(
+        |(id, (k1, (k2, (k3, k4))))| {
+            conc[id] += (k1 + 2.0 * k2 + 2.0 * k3 + *k4) / 6.0;
+        },
+    );
+    conc[22] = 10.0_f64.powf(-14.0) / conc[3];
 }
 
 // fn potencjal_mieszany(c_ho2min: f64, c_ho2rod: f64, c_cuoh3: f64, c_cuoh2: f64) -> (f64, f64) {
